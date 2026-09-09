@@ -30,7 +30,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var activeTip: TipKind?
     @State private var proxyOperationError = ""
-    @State private var proxyOperationAlertTitle = "代理操作失败"
+    @State private var proxyOperationAlertTitle = String(localized: "代理操作失败")
     @State private var modeOperationRunning = false
     @State private var copiedClient: ThirdPartyProxyClient?
     @State private var copiedMITMHostnames = false
@@ -268,7 +268,7 @@ struct SettingsView: View {
         }
     }
 
-    private func valueRow(_ title: String, value: String) -> some View {
+    private func valueRow(_ title: LocalizedStringKey, value: String) -> some View {
         HStack { Text(title); Spacer(); Text(value).font(.footnote.monospaced()).foregroundStyle(.secondary) }
     }
 
@@ -319,15 +319,15 @@ struct SettingsView: View {
             )
         case .available(let prompt):
             let details = prompt.releaseNotes
-                ?? "更新说明暂时无法加载，请前往最新 Release 页面查看。"
+                ?? String(localized: "更新说明暂时无法加载，请前往最新 Release 页面查看。")
             let message: String
             if prompt.requirement == .required {
-                message = "当前版本 \(prompt.currentVersion) 已停止支持，请更新到 \(prompt.latestVersion) 后继续使用。\n\n\(details)"
+                message = String(localized: "当前版本 \(prompt.currentVersion) 已停止支持，请更新到 \(prompt.latestVersion) 后继续使用。\n\n\(details)")
             } else {
-                message = "当前版本 \(prompt.currentVersion)，最新版本 \(prompt.latestVersion)。\n\n\(details)"
+                message = String(localized: "当前版本 \(prompt.currentVersion)，最新版本 \(prompt.latestVersion)。\n\n\(details)")
             }
             return Alert(
-                title: Text(prompt.requirement == .required ? "需要更新" : "发现新版本"),
+                title: prompt.requirement == .required ? Text("需要更新") : Text("发现新版本"),
                 message: Text(message),
                 primaryButton: .default(Text("前往更新")) {
                     UIApplication.shared.open(AppRemoteConfigurationService.releasesURL)
@@ -351,7 +351,7 @@ struct SettingsView: View {
                         try await proxy.start()
                     } catch {
                         proxy.error = error.localizedDescription
-                        proxyOperationAlertTitle = "代理操作失败"
+                        proxyOperationAlertTitle = String(localized: "代理操作失败")
                         proxyOperationError = error.localizedDescription
                     }
                 } else {
@@ -422,14 +422,14 @@ struct SettingsView: View {
                 UIPasteboard.general.string = thirdPartyClient.selectedClient.subscriptionURL.absoluteString
                 copiedClient = thirdPartyClient.selectedClient
             } label: {
-                Label(copiedClient == thirdPartyClient.selectedClient ? "已复制模块订阅地址" : "复制模块订阅地址", systemImage: "doc.on.doc")
+                (copiedClient == thirdPartyClient.selectedClient ? Label("已复制模块订阅地址", systemImage: "doc.on.doc") : Label("复制模块订阅地址", systemImage: "doc.on.doc"))
             }
 
             Button {
                 UIPasteboard.general.string = ThirdPartyProxyManager.interceptionHostnamesText
                 copiedMITMHostnames = true
             } label: {
-                Label(copiedMITMHostnames ? "已复制解密域名" : "复制解密域名", systemImage: "doc.on.doc")
+                (copiedMITMHostnames ? Label("已复制解密域名", systemImage: "doc.on.doc") : Label("复制解密域名", systemImage: "doc.on.doc"))
             }
 
             Button {
@@ -468,31 +468,31 @@ struct SettingsView: View {
 
     private var thirdPartyStatusText: String {
         switch thirdPartyProxy.connectionState {
-        case .unknown: return "未检测"
-        case .connected(let active): return active ? "已连接，有坐标" : "已连接，无坐标"
-        case .failed: return "连接失败"
+        case .unknown: return String(localized: "未检测")
+        case .connected(let active): return active ? String(localized: "已连接，有坐标") : String(localized: "已连接，无坐标")
+        case .failed: return String(localized: "连接失败")
         }
     }
 
     private var virtualLocationStatusText: String {
         if runtimeMode.mode == .localWiFi {
-            return actions.virtualLocationEnabled ? "已开启" : "已关闭"
+            return actions.virtualLocationEnabled ? String(localized: "已开启") : String(localized: "已关闭")
         }
         if case .connected(let active) = thirdPartyProxy.connectionState {
-            return active ? "第三方已保存" : "未保存"
+            return active ? String(localized: "第三方已保存") : String(localized: "未保存")
         }
-        return "未知"
+        return String(localized: "未知")
     }
 
     private var workflowDescription: String {
         if runtimeMode.mode == .thirdParty {
-            return "App 只负责地图选点、收藏和发送 WGS-84 坐标。第三方代理客户端通过模块拦截 Apple WLOC 请求并持久化当前坐标；本模式不启动本机代理，不使用 App 的 CA，也不需要配置 127.0.0.1:8888。"
+            return String(localized: "App 只负责地图选点、收藏和发送 WGS-84 坐标。第三方代理客户端通过模块拦截 Apple WLOC 请求并持久化当前坐标；本模式不启动本机代理，不使用 App 的 CA，也不需要配置 127.0.0.1:8888。")
         }
-        return """
+        return String(localized: """
         App 在设备本地运行一个代理服务器（127.0.0.1:8888）。
 
         通过 WiFi 手动代理配置，让系统发往 Apple 定位域名（gs-loc.apple.com、gsp-ssl.ls.apple.com、bluedot.is.autonavi.com 等）的定位请求经过这个本地代理。代理使用已安装的 CA 证书对 HTTPS 流量做中间人解密，把 Apple 返回的定位坐标改写为你设置的虚拟坐标，再加密返回给系统，从而实现虚拟定位。
-        """
+        """)
     }
 
     private func switchRuntimeMode(to newMode: ProxyRuntimeMode) {
@@ -509,8 +509,8 @@ struct SettingsView: View {
                 if runtimeMode.isInitialized(.thirdParty) {
                     do {
                         _ = try await thirdPartyProxy.query()
-                        proxyOperationAlertTitle = "模式已切换"
-                        proxyOperationError = "第三方代理模式检测通过。请关闭 Wi-Fi 中的 127.0.0.1:8888 手动代理，避免双重拦截。"
+                        proxyOperationAlertTitle = String(localized: "模式已切换")
+                        proxyOperationError = String(localized: "第三方代理模式检测通过。请关闭 Wi-Fi 中的 127.0.0.1:8888 手动代理，避免双重拦截。")
                     } catch {
                         openThirdPartySetup(for: error)
                     }
@@ -532,8 +532,8 @@ struct SettingsView: View {
                     let result = await setup.runVerificationTest()
                     setup.applyVerificationResult(result)
                     if result.isSuccess {
-                        proxyOperationAlertTitle = "模式已切换"
-                        proxyOperationError = "APP 模式环境检测通过。请停用第三方 WLOC 模块或代理连接，避免双重拦截。"
+                        proxyOperationAlertTitle = String(localized: "模式已切换")
+                        proxyOperationError = String(localized: "APP 模式环境检测通过。请停用第三方 WLOC 模块或代理连接，避免双重拦截。")
                     } else {
                         dismiss()
                     }
@@ -594,14 +594,14 @@ struct SettingsView: View {
                 try setup.certificateStore.reset()
                 runtimeMode.resetInitialization(.localWiFi)
                 guard await setup.prepareLocalServices() else {
-                    proxyOperationAlertTitle = "证书重置失败"
+                    proxyOperationAlertTitle = String(localized: "证书重置失败")
                     proxyOperationError = setup.message
                     return
                 }
                 setup.requestCertificateSetup()
                 dismiss()
             } catch {
-                proxyOperationAlertTitle = "证书重置失败"
+                proxyOperationAlertTitle = String(localized: "证书重置失败")
                 proxyOperationError = error.localizedDescription
             }
         }
@@ -612,8 +612,8 @@ struct SettingsView: View {
         UIApplication.shared.open(url, options: [:]) { opened in
             guard !opened else { return }
             Task { @MainActor in
-                proxyOperationAlertTitle = "无法打开客户端"
-                proxyOperationError = "无法打开 \(client.name)，请确认客户端已安装后手动打开。"
+                proxyOperationAlertTitle = String(localized: "无法打开客户端")
+                proxyOperationError = String(localized: "无法打开 \(client.name)，请确认客户端已安装后手动打开。")
             }
         }
     }

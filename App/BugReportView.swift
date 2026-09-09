@@ -56,7 +56,7 @@ struct BugReportView: View {
                         if isRunning {
                             ProgressView().tint(.white)
                         }
-                        Text(isRunning ? "正在生成报告…" : "生成 Bug 报告")
+                        (isRunning ? Text("正在生成报告…") : Text("生成 Bug 报告"))
                             .font(.body.weight(.medium))
                     }
                     .frame(maxWidth: .infinity)

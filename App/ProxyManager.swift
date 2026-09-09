@@ -154,13 +154,13 @@ final class ProxyManager: ObservableObject {
         do {
             if !isRunning { try await start() }
             guard let url = URL(string: "http://127.0.0.1:8888/cert") else {
-                error = "证书下载地址无效"
+                error = String(localized: "证书下载地址无效")
                 return nil
             }
             error = nil
             return url
         } catch {
-            self.error = "启动代理失败: \(error.localizedDescription)"
+            self.error = String(localized: "启动代理失败: \(error.localizedDescription)")
             RuntimeLogger.error("APP", "Certificate", "准备证书下载失败", error: error)
             return nil
         }

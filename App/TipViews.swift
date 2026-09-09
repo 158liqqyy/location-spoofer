@@ -23,7 +23,7 @@ struct TipSheetView: View {
                     }
                 }.padding(16)
             }
-            .navigationTitle(kind.rawValue).navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(LocalizedStringKey(kind.rawValue)).navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
                 Button { dismiss() } label: {
                     Text("知道了").font(.body.weight(.medium)).frame(maxWidth: .infinity).padding(.vertical, 12)
@@ -80,7 +80,7 @@ struct ActivationTipContent: View {
 
     }
 
-    private func step(_ n: Int, _ title: String, _ detail: String) -> some View {
+    private func step(_ n: Int, _ title: LocalizedStringKey, _ detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text("\(n)").font(.caption2.bold())
                 .frame(width: 20, height: 20)
@@ -92,7 +92,7 @@ struct ActivationTipContent: View {
         }
     }
 
-    private func systemStep(_ n: Int, _ title: String, _ detail: String) -> some View {
+    private func systemStep(_ n: Int, _ title: LocalizedStringKey, _ detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text("\(n)").font(.caption2.bold())
                 .frame(width: 20, height: 20)
@@ -141,7 +141,7 @@ struct DeactivationTipContent: View {
 
     }
 
-    private func step(_ n: Int, _ title: String, _ detail: String) -> some View {
+    private func step(_ n: Int, _ title: LocalizedStringKey, _ detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text("\(n)").font(.caption2.bold())
                 .frame(width: 20, height: 20)
@@ -153,7 +153,7 @@ struct DeactivationTipContent: View {
         }
     }
 
-    private func systemStep(_ n: Int, _ title: String, _ detail: String) -> some View {
+    private func systemStep(_ n: Int, _ title: LocalizedStringKey, _ detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text("\(n)").font(.caption2.bold())
                 .frame(width: 20, height: 20)

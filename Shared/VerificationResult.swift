@@ -26,4 +26,18 @@ enum VerificationResult: Equatable, Identifiable {
 
     var isSuccess: Bool { self == .success }
 
+    /// Localized, user-facing title. `id` stays stable for routing/equality.
+    var localizedTitle: String {
+        switch self {
+        case .success: return String(localized: "成功")
+        case .proxyNotRunning: return String(localized: "代理未运行")
+        case .verificationInProgress: return String(localized: "已有验证正在进行")
+        case .verificationSuperseded: return String(localized: "验证已被新位置取代")
+        case .certNotTrusted: return String(localized: "证书未信任")
+        case .wifiProxyNotConfigured: return String(localized: "WiFi代理未配置")
+        case .coordinateWriteFailed: return String(localized: "坐标写入失败")
+        case .patchFailed: return String(localized: "改写验证失败")
+        }
+    }
+
 }

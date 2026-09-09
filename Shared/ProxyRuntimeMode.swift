@@ -8,8 +8,8 @@ enum ProxyRuntimeMode: String, CaseIterable, Codable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .localWiFi: return "APP模式"
-        case .thirdParty: return "第三方代理模式"
+        case .localWiFi: return String(localized: "APP模式")
+        case .thirdParty: return String(localized: "第三方代理模式")
         }
     }
 }

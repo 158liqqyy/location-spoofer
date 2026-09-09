@@ -150,7 +150,7 @@ struct FirstSetupView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             .padding()
                     }
-                    .navigationTitle(preview.title)
+                    .navigationTitle(LocalizedStringKey(preview.title))
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
@@ -188,7 +188,7 @@ struct FirstSetupView: View {
                     Circle()
                         .fill(value.rawValue <= step.rawValue ? Color.blue : Color.gray.opacity(0.3))
                         .frame(width: 10, height: 10)
-                    Text(value.title).font(.caption).foregroundStyle(.secondary)
+                    Text(LocalizedStringKey(value.title)).font(.caption).foregroundStyle(.secondary)
                 }
                 if value != visibleSteps.last {
                     Rectangle().fill(Color.gray.opacity(0.3)).frame(width: 28, height: 2)
@@ -274,10 +274,10 @@ struct FirstSetupView: View {
     }
 
     private func modeCard(
-        title: String,
+        title: LocalizedStringKey,
         icon: String,
         badges: [String],
-        description: String,
+        description: LocalizedStringKey,
         tint: Color,
         action: @escaping () -> Void
     ) -> some View {
@@ -288,7 +288,7 @@ struct FirstSetupView: View {
                     .foregroundStyle(tint)
                 HStack(spacing: 6) {
                     ForEach(badges, id: \.self) { badge in
-                        Text(badge)
+                        Text(LocalizedStringKey(badge))
                             .font(.caption2.weight(.semibold))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -354,7 +354,7 @@ struct FirstSetupView: View {
                         if let url = await setup.proxy.prepareCertificateDownloadURL() {
                             certificateDownloadDestination = CertificateDownloadDestination(url: url)
                         } else {
-                            setupActionError = setup.proxy.error ?? "无法准备证书下载页面，请查看诊断日志"
+                            setupActionError = setup.proxy.error ?? String(localized: "无法准备证书下载页面，请查看诊断日志")
                         }
                     }
                 },
@@ -507,7 +507,7 @@ struct FirstSetupView: View {
                         UIPasteboard.general.string = client.subscriptionURL.absoluteString
                         copiedSubscriptionURL = true
                     } label: {
-                        Label(copiedSubscriptionURL ? "已复制模块订阅地址" : "复制模块订阅地址", systemImage: "doc.on.doc")
+                        (copiedSubscriptionURL ? Label("已复制模块订阅地址", systemImage: "doc.on.doc") : Label("复制模块订阅地址", systemImage: "doc.on.doc"))
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
@@ -565,7 +565,7 @@ struct FirstSetupView: View {
             if let thirdPartyFailureLog {
                 testResultView(
                     success: false,
-                    title: "接口连接失败",
+                    title: String(localized: "接口连接失败"),
                     log: thirdPartyFailureLog
                 )
                 .id("thirdPartyFailureLog")
@@ -615,16 +615,15 @@ struct FirstSetupView: View {
             UIPasteboard.general.string = ThirdPartyProxyManager.interceptionHostnamesText
             copiedMITMHostname = true
         } label: {
-            Label(
-                copiedMITMHostname ? "已复制解密域名" : "复制解密域名",
-                systemImage: "doc.on.doc"
-            )
+            (copiedMITMHostname
+                ? Label("已复制解密域名", systemImage: "doc.on.doc")
+                : Label("复制解密域名", systemImage: "doc.on.doc"))
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
     }
 
-    private func instructionRow(_ number: Int, _ text: String) -> some View {
+    private func instructionRow(_ number: Int, _ text: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 8) {
             Text("\(number)")
                 .font(.caption2.bold())
@@ -642,7 +641,7 @@ struct FirstSetupView: View {
     private func setupScreenshot(
         assetName: String,
         title: String,
-        caption: String
+        caption: LocalizedStringKey
     ) -> some View {
         if let image = UIImage(named: assetName) {
             Button {
@@ -673,7 +672,7 @@ struct FirstSetupView: View {
                 )
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("\(title)：\(caption)")
+            .accessibilityLabel(LocalizedStringKey(title))
             .accessibilityHint("轻点查看大图")
         }
     }
@@ -683,7 +682,7 @@ struct FirstSetupView: View {
         UIApplication.shared.open(url, options: [:]) { opened in
             guard !opened else { return }
             Task { @MainActor in
-                manualHint = "无法打开 \(client.name)，请确认客户端已安装后手动打开。"
+                manualHint = String(localized: "无法打开 \(client.name)，请确认客户端已安装后手动打开。")
             }
         }
     }
@@ -705,10 +704,10 @@ struct FirstSetupView: View {
     }
 
     private func certificateCard(
-        title: String,
+        title: LocalizedStringKey,
         icon: String,
-        description: String,
-        actionTitle: String,
+        description: LocalizedStringKey,
+        actionTitle: LocalizedStringKey,
         actionIcon: String,
         complete: Bool,
         action: @escaping () -> Void,
@@ -728,10 +727,9 @@ struct FirstSetupView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(.blue)
                     Button(action: markComplete) {
-                        Label(
-                            complete ? "已完成 ✓" : "已完成",
-                            systemImage: complete ? "checkmark.circle.fill" : "circle"
-                        )
+                        (complete
+                            ? Label("已完成 ✓", systemImage: "checkmark.circle.fill")
+                            : Label("已完成", systemImage: "circle"))
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
@@ -746,7 +744,7 @@ struct FirstSetupView: View {
         let success = result.isSuccess
         testResultView(
             success: success,
-            title: success ? "环境检测通过" : failureSummary(result),
+            title: success ? String(localized: "环境检测通过") : failureSummary(result),
             log: setup.testLog
         )
     }
@@ -905,7 +903,7 @@ struct FirstSetupView: View {
         }
     }
 
-    private func actionLabel(_ title: String) -> some View {
+    private func actionLabel(_ title: LocalizedStringKey) -> some View {
         HStack {
             if isVerifying { ProgressView().tint(.white).controlSize(.small) }
             Text(title)
@@ -954,14 +952,14 @@ struct FirstSetupView: View {
 
     private func failureSummary(_ result: VerificationResult) -> String {
         switch result {
-        case .certNotTrusted: return "证书尚未安装或信任"
-        case .wifiProxyNotConfigured: return "Wi-Fi 代理未正确设置"
-        case .proxyNotRunning: return "本地代理未能启动"
-        case .verificationInProgress: return "检测仍在进行"
-        case .verificationSuperseded: return "检测结果已过期"
-        case .coordinateWriteFailed: return "坐标写入失败"
-        case .patchFailed: return "定位改写检测失败"
-        case .success: return "环境检测通过"
+        case .certNotTrusted: return String(localized: "证书尚未安装或信任")
+        case .wifiProxyNotConfigured: return String(localized: "Wi-Fi 代理未正确设置")
+        case .proxyNotRunning: return String(localized: "本地代理未能启动")
+        case .verificationInProgress: return String(localized: "检测仍在进行")
+        case .verificationSuperseded: return String(localized: "检测结果已过期")
+        case .coordinateWriteFailed: return String(localized: "坐标写入失败")
+        case .patchFailed: return String(localized: "定位改写检测失败")
+        case .success: return String(localized: "环境检测通过")
         }
     }
 

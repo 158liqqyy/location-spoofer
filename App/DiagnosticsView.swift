@@ -12,6 +12,7 @@ struct RuntimeLogsView: View {
     @State private var entries: [RuntimeLogEntry] = []
     @State private var isTesting = false
     @State private var testResult = ""
+    @State private var testSucceeded = false
     @State private var testMessage = ""
     @State private var showClearConfirm = false
     @State private var copiedEntryID: UUID?
@@ -42,7 +43,7 @@ struct RuntimeLogsView: View {
             if filteredEntries.isEmpty {
                 VStack(spacing: 10) {
                     Image(systemName: "doc.text.magnifyingglass").font(.largeTitle).foregroundStyle(.secondary)
-                    Text(entries.isEmpty ? "暂无运行日志" : "无匹配日志").foregroundStyle(.secondary)
+                    (entries.isEmpty ? Text("暂无运行日志") : Text("无匹配日志")).foregroundStyle(.secondary)
                 }.frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
@@ -103,8 +104,11 @@ struct RuntimeLogsView: View {
                         await runThirdPartyConnectionTest()
                     } else {
                         let result = await setup.runVerificationTest()
-                        testResult = result.isSuccess ? "环境检测通过" : "环境检测失败: \(result.id)"
-                        if !result.isSuccess { testResult += "，查看下方日志" }
+                        testSucceeded = result.isSuccess
+                        testResult = result.isSuccess
+                            ? String(localized: "环境检测通过")
+                            : String(localized: "环境检测失败: \(result.localizedTitle)")
+                        if !result.isSuccess { testResult += String(localized: "，查看下方日志") }
                         testMessage = setup.testLog
                     }
                     isTesting = false; refresh()
@@ -116,7 +120,7 @@ struct RuntimeLogsView: View {
                     } else {
                         Image(systemName: "play.fill").font(.system(size: 13, weight: .bold))
                     }
-                    Text(isTesting ? "正在检测…" : "环境检测").font(.subheadline.weight(.semibold))
+                    (isTesting ? Text("正在检测…") : Text("环境检测")).font(.subheadline.weight(.semibold))
                     Spacer()
                     Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).opacity(0.5)
                 }
@@ -131,9 +135,9 @@ struct RuntimeLogsView: View {
                     .fill(isTesting ? Color.gray : Color.blue)
             )
             .disabled(isTesting || actions.state.isBusy)
-            Text(runtimeMode.mode == .thirdParty
-                 ? "检查第三方模块能否拦截并响应 query 请求；不会写入测试坐标。"
-                 : "依次检查：本地代理 → CA 证书信任 → Wi-Fi 代理链路。")
+            (runtimeMode.mode == .thirdParty
+                 ? Text("检查第三方模块能否拦截并响应 query 请求；不会写入测试坐标。")
+                 : Text("依次检查：本地代理 → CA 证书信任 → Wi-Fi 代理链路。"))
                 .font(.caption).foregroundStyle(.secondary)
             if !testMessage.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
@@ -180,13 +184,13 @@ struct RuntimeLogsView: View {
             }
             if runtimeMode.mode == .localWiFi {
                 HStack(spacing: 14) {
-                    Label(proxy.isRunning ? "代理运行中" : "代理未运行", systemImage: proxy.isRunning ? "play.circle" : "stop.circle")
-                    Label(setup.canModify ? "可修改" : "不可修改", systemImage: setup.canModify ? "checkmark.shield.fill" : "xmark.shield")
+                    (proxy.isRunning ? Label("代理运行中", systemImage: "play.circle") : Label("代理未运行", systemImage: "stop.circle"))
+                    (setup.canModify ? Label("可修改", systemImage: "checkmark.shield.fill") : Label("不可修改", systemImage: "xmark.shield"))
                 }.font(.caption).foregroundStyle(.secondary)
             }
             if !testResult.isEmpty {
                 Text(testResult).font(.footnote.weight(.medium))
-                    .foregroundStyle(testResult.contains("通过") ? .green : .red)
+                    .foregroundStyle(testSucceeded ? .green : .red)
             }
         }.padding(14).background(Color(.secondarySystemBackground))
     }
@@ -240,7 +244,8 @@ struct RuntimeLogsView: View {
         do {
             let response = try await thirdPartyProxy.query()
             let active = response.success && response.latitude != nil && response.longitude != nil
-            testResult = active ? "第三方模块连接通过，已有坐标" : "第三方模块连接通过，暂无坐标"
+            testSucceeded = true
+            testResult = active ? String(localized: "第三方模块连接通过，已有坐标") : String(localized: "第三方模块连接通过，暂无坐标")
             testMessage = """
             ======== 第三方代理连接检测 ========
             模式: 测试模式
@@ -249,7 +254,8 @@ struct RuntimeLogsView: View {
             已保存坐标: \(active ? "是" : "否")
             """
         } catch {
-            testResult = "第三方模块连接失败"
+            testSucceeded = false
+            testResult = String(localized: "第三方模块连接失败")
             testMessage = """
             ======== 第三方代理连接检测 ========
             模式: 测试模式

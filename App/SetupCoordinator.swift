@@ -36,7 +36,7 @@ final class SetupCoordinator: ObservableObject {
             message = ""
             return true
         } catch {
-            message = "本地代理初始化失败：\(error.localizedDescription)"
+            message = String(localized: "本地代理初始化失败：\(error.localizedDescription)")
             RuntimeLogger.error("APP", "Startup", "本地服务初始化失败", error: error)
             return false
         }
@@ -48,19 +48,19 @@ final class SetupCoordinator: ObservableObject {
         case .success:
             trustState = .trusted
             needsSetup = false
-            message = "✓ 定位环境正常"
+            message = String(localized: "✓ 定位环境正常")
         case .certNotTrusted:
             trustState = .unavailable
             setupStep = .cert
             needsSetup = true
-            message = "CA 证书未安装或未信任"
+            message = String(localized: "CA 证书未安装或未信任")
         case .verificationInProgress, .verificationSuperseded:
             break
         default:
             trustState = .unavailable
             setupStep = .proxy
             needsSetup = true
-            message = "Wi-Fi 代理未正确设置，请检查 127.0.0.1:8888"
+            message = String(localized: "Wi-Fi 代理未正确设置，请检查 127.0.0.1:8888")
         }
     }
 
