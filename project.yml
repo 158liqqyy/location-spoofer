@@ -4,6 +4,12 @@ options:
   deploymentTarget:
     iOS: "15.0"
   createIntermediateGroups: true
+  developmentLanguage: zh-Hans
+
+knownRegions:
+  - zh-Hans
+  - en
+  - Base
 
 settings:
   base:

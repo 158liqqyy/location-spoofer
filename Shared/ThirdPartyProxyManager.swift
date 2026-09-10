@@ -25,25 +25,25 @@ enum ThirdPartyProxyError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
-            return "第三方代理返回了无法识别的数据"
+            return String(localized: "第三方代理返回了无法识别的数据")
         case .moduleNotIntercepted:
-            return "请求未被第三方代理模块拦截，请检查模块、MITM 和代理连接"
+            return String(localized: "请求未被第三方代理模块拦截，请检查模块、MITM 和代理连接")
         case .rejected(let message):
             return message
         case .coordinateMismatch:
-            return "第三方代理保存的坐标与当前选点不一致"
+            return String(localized: "第三方代理保存的坐标与当前选点不一致")
         case .network(let message):
-            return "第三方代理请求失败：\(message)"
+            return String(localized: "第三方代理请求失败：\(message)")
         }
     }
 
     var recoverySuggestion: String {
-        return "检查模块、MITM、证书和代理/VPN连接"
+        return String(localized: "检查模块、MITM、证书和代理/VPN连接")
     }
 
     static func recoverySuggestion(for error: Error) -> String {
         (error as? Self)?.recoverySuggestion
-            ?? "检查模块、MITM、证书和代理/VPN连接"
+            ?? String(localized: "检查模块、MITM、证书和代理/VPN连接")
     }
 }
 
@@ -106,7 +106,7 @@ final class ThirdPartyProxyManager: ObservableObject {
             randomRadius: RandomRadiusStore.shared.isEnabled ? RandomRadiusStore.shared.radius : 0
         ))
         guard response.success else {
-            throw ThirdPartyProxyError.rejected(response.error ?? "第三方代理拒绝保存坐标")
+            throw ThirdPartyProxyError.rejected(response.error ?? String(localized: "第三方代理拒绝保存坐标"))
         }
         guard let latitude = response.latitude,
               let longitude = response.longitude,
@@ -127,7 +127,7 @@ final class ThirdPartyProxyManager: ObservableObject {
     func clear() async throws {
         let response = try await perform(action: .clear)
         guard response.success else {
-            throw ThirdPartyProxyError.rejected(response.error ?? "第三方代理清除坐标失败")
+            throw ThirdPartyProxyError.rejected(response.error ?? String(localized: "第三方代理清除坐标失败"))
         }
         activeSettings = nil
         connectionState = .connected(active: false)
@@ -143,7 +143,7 @@ final class ThirdPartyProxyManager: ObservableObject {
         if response.error?.contains("无已保存") == true {
             return false
         }
-        throw ThirdPartyProxyError.rejected(response.error ?? "第三方代理查询失败")
+        throw ThirdPartyProxyError.rejected(response.error ?? String(localized: "第三方代理查询失败"))
     }
 
     private enum Action {
@@ -154,7 +154,7 @@ final class ThirdPartyProxyManager: ObservableObject {
 
     private func perform(action: Action) async throws -> ThirdPartyProxySettingsResponse {
         guard !isRequesting else {
-            throw ThirdPartyProxyError.rejected("已有第三方代理请求正在执行")
+            throw ThirdPartyProxyError.rejected(String(localized: "已有第三方代理请求正在执行"))
         }
         isRequesting = true
         defer { isRequesting = false }
@@ -170,7 +170,10 @@ final class ThirdPartyProxyManager: ObservableObject {
                 URLQueryItem(name: "lon", value: String(format: "%.8f", locale: Locale(identifier: "en_US_POSIX"), longitude)),
                 URLQueryItem(name: "lat", value: String(format: "%.8f", locale: Locale(identifier: "en_US_POSIX"), latitude)),
                 URLQueryItem(name: "acc", value: String(accuracy)),
-                URLQueryItem(name: "randomRadius", value: String(randomRadius))
+                URLQueryItem(
+                    name: "randomRadius",
+                    value: String(format: "%g", locale: Locale(identifier: "en_US_POSIX"), randomRadius)
+                )
             ]
         }
         guard let url = components.url else { throw ThirdPartyProxyError.invalidResponse }
@@ -203,6 +206,9 @@ final class ThirdPartyProxyManager: ObservableObject {
 }
 
 enum ThirdPartyProxyClient: String, CaseIterable, Identifiable {
+    /// Bump when a hosted module or script changes to invalidate proxy-client caches.
+    static let moduleSubscriptionVersion = "1.0.7"
+
     case shadowrocket
     case surge
     case quantumultX
@@ -224,7 +230,7 @@ enum ThirdPartyProxyClient: String, CaseIterable, Identifiable {
     }
 
     var verificationText: String? {
-        self == .shadowrocket ? nil : "配置已提供，尚未验证"
+        self == .shadowrocket ? nil : String(localized: "配置已提供，尚未验证")
     }
 
     var moduleFileName: String {
@@ -239,21 +245,14 @@ enum ThirdPartyProxyClient: String, CaseIterable, Identifiable {
 
     @MainActor
     var subscriptionURL: URL {
-        // Third-party modules are served directly from the upstream Yu9191/wloc
-        // repository (mirror via gh-proxy when enabled). We no longer maintain
-        // project-owned module copies, so the URL tracks upstream releases.
-        let fileName: String
-        switch self {
-        case .surge, .egern: fileName = "wloc.sgmodule"
-        case .quantumultX: fileName = "wloc.conf"
-        case .loon: fileName = "wloc.lpx"
-        case .stash: fileName = "wloc.stoverride"
-        case .shadowrocket: fileName = "wloc.module"
-        }
-        let base = ThirdPartyModuleSourceStore.shared.useMirror
-            ? "https://gh-proxy.org/https://raw.githubusercontent.com/Yu9191/wloc/refs/heads/main/modules/\(fileName)"
-            : "https://raw.githubusercontent.com/Yu9191/wloc/refs/heads/main/modules/\(fileName)"
-        return URL(string: base)!
+        let directory = ThirdPartyModuleSourceStore.shared.useMirror
+            ? "Resources/ThirdPartyProxyModules"
+            : "ThirdParty/WlocScripts/modules/direct"
+        let prefix = ThirdPartyModuleSourceStore.shared.useMirror
+            ? "https://gh-proxy.org/https://raw.githubusercontent.com/xweiba/location-spoofer/main/"
+            : "https://raw.githubusercontent.com/xweiba/location-spoofer/main/"
+        let base = "\(prefix)\(directory)/\(moduleFileName)"
+        return URL(string: "\(base)?v=\(Self.moduleSubscriptionVersion)")!
     }
 
     var launchURL: URL? {

@@ -301,7 +301,7 @@ struct MapHomeView: View {
             }
         } message: {
             Text(
-                "你正在使用 \(communityContributionClient?.name ?? "第三方客户端")。点击“去提交”会先复制投稿模板，并在 App 内打开社区页面。采纳后将收录到 README，可选择是否匿名署名。"
+                "你正在使用 \(communityContributionClient?.name ?? String(localized: "第三方客户端"))。点击“去提交”会先复制投稿模板，并在 App 内打开社区页面。采纳后将收录到 README，可选择是否匿名署名。"
             )
         }
         .alert("已复制投稿模板", isPresented: $showCommunityTemplateCopied) {
@@ -483,7 +483,7 @@ struct MapHomeView: View {
             // 当前选点
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(mapState.displayName ?? "当前选点").font(.subheadline.weight(.semibold)).lineLimit(1)
+                    Text(mapState.displayName ?? String(localized: "当前选点")).font(.subheadline.weight(.semibold)).lineLimit(1)
                     coordinateRow(label: "GCJ-02(国内)", system: .gcj02)
                     coordinateRow(label: "WGS-84(国际)", system: .wgs84)
                 }
@@ -496,7 +496,7 @@ struct MapHomeView: View {
                         activeTip = .deactivation
                     }
                 } label: {
-                    Text(spoofState == .active ? "无法生效？" : "无法取消？")
+                    (spoofState == .active ? Text("无法生效？") : Text("无法取消？"))
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 8)
@@ -520,7 +520,7 @@ struct MapHomeView: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(favorites.selectedFavoriteID != nil ? .orange : .gray)
                 .disabled(favoriteSaveTask != nil)
-                .accessibilityLabel(favorites.selectedFavoriteID != nil ? "已收藏，点击取消收藏" : "收藏当前选点")
+                .accessibilityLabel(favorites.selectedFavoriteID != nil ? Text("已收藏，点击取消收藏") : Text("收藏当前选点"))
             }
             // 收藏
             if favorites.favorites.isEmpty {
@@ -537,7 +537,7 @@ struct MapHomeView: View {
                         if spoofState == .verifying {
                             ProgressView().tint(.white)
                         }
-                        Text(spoofState == .active && needsSwitchButton ? "关闭" : buttonTitle)
+                        (spoofState == .active && needsSwitchButton ? Text("关闭") : Text(buttonTitle))
                             .font(.headline).lineLimit(1)
                     }
                     .frame(maxWidth: needsSwitchButton ? nil : .infinity)
@@ -585,15 +585,15 @@ struct MapHomeView: View {
     private var buttonTitle: String {
         if runtimeMode.mode == .thirdParty {
             switch spoofState {
-            case .idle: return "同步到第三方代理"
-            case .verifying: return "检测并同步中…"
-            case .active: return "停止第三方虚拟定位"
+            case .idle: return String(localized: "同步到第三方代理")
+            case .verifying: return String(localized: "检测并同步中…")
+            case .active: return String(localized: "停止第三方虚拟定位")
             }
         }
         switch spoofState {
-        case .idle: return "开始虚拟定位"
-        case .verifying: return "验证环境中…"
-        case .active: return "停止虚拟定位"
+        case .idle: return String(localized: "开始虚拟定位")
+        case .verifying: return String(localized: "验证环境中…")
+        case .active: return String(localized: "停止虚拟定位")
         }
     }
 
@@ -766,7 +766,8 @@ struct MapHomeView: View {
     private func presentSuccessfulOperationTip(_ kind: VirtualLocationTipKind) {
         let count = tipPreferences.recordSuccessfulOperation(kind)
         let operationName = kind == .activation ? "开启" : "关闭"
-        RuntimeLogger.info("APP", "提醒", "累计\(operationName)虚拟定位次数", details: [
+        RuntimeLogger.info("APP", "提醒", "累计虚拟定位操作次数", details: [
+            "操作": operationName,
             "次数": String(count),
             "运行模式": runtimeMode.mode.displayName,
             "可显示不再提醒": String(tipPreferences.canSuppress(kind))
@@ -856,7 +857,7 @@ struct MapHomeView: View {
     }
 
     private func coordinateRow(
-        label: String,
+        label: LocalizedStringKey,
         system: CoordinateConverter.MapCoordinateSystem
     ) -> some View {
         let coordinate = currentSelectionPair.coordinate(for: system)
@@ -1091,7 +1092,7 @@ struct MapHomeView: View {
                         "请求动作": "WLOC query",
                         "错误": response.error ?? "未知错误"
                     ])
-                    setup.requestThirdPartySetup(message: response.error ?? "第三方代理查询失败")
+                    setup.requestThirdPartySetup(message: response.error ?? String(localized: "第三方代理查询失败"))
                 }
             } catch {
                 spoofState = .idle
@@ -1144,7 +1145,7 @@ struct MapHomeView: View {
                     "Wi-Fi接口": String(net.isWiFiEnabled)
                 ])
                 activeTip = nil
-                setup.requestSetup(message: "当前未连接可用的 Wi-Fi，请连接 Wi-Fi 后配置 127.0.0.1:8888 手动代理。")
+                setup.requestSetup(message: String(localized: "当前未连接可用的 Wi-Fi，请连接 Wi-Fi 后配置 127.0.0.1:8888 手动代理。"))
                 return
             }
 
@@ -1335,7 +1336,9 @@ struct MapHomeView: View {
                       context.showFailureAlert,
                       !Task.isCancelled,
                       mapState.selection.revision == context.intent.selectionRevision else { return }
-                RuntimeLogger.info("APP", "地图", "定位失败 status=\(realtime.authorizationStatus.rawValue)")
+                RuntimeLogger.info("APP", "地图", "定位失败", details: [
+                    "授权状态rawValue": String(realtime.authorizationStatus.rawValue)
+                ])
                 showLocationAlert = true
                 return
             }
@@ -1517,7 +1520,7 @@ struct MapHomeView: View {
                 }
                 searchResults = (response?.mapItems ?? []).prefix(6).map { item in
                     let r = SearchLocationResult(
-                        name: item.name ?? "未命名",
+                        name: item.name ?? String(localized: "未命名"),
                         subtitle: [item.placemark.locality, item.placemark.subLocality, item.placemark.thoroughfare]
                             .compactMap { $0 }
                             .filter { !$0.isEmpty }
@@ -1529,7 +1532,7 @@ struct MapHomeView: View {
                     ])
                     return r
                 }
-                if searchResults.isEmpty { searchError = "没有找到相关地点" }
+                if searchResults.isEmpty { searchError = String(localized: "没有找到相关地点") }
             }
         }
     }

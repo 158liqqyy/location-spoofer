@@ -73,9 +73,13 @@ final class RealtimeLocationManagerTests: XCTestCase {
     func testOneShotTimeoutTransitionsToContinuousFallback() async {
         let driver = FakeRealtimeLocationDriver()
         let manager = RealtimeLocationManager(driver: driver, oneShotTimeoutNanoseconds: 5_000_000, fallbackTimeoutNanoseconds: 1_000_000_000)
+        let fallbackStarted = expectation(description: "Continuous location fallback started")
+        driver.onStartUpdating = {
+            fallbackStarted.fulfill()
+        }
 
         let request = Task { await manager.requestLocation() }
-        try? await Task.sleep(nanoseconds: 20_000_000)
+        await fulfillment(of: [fallbackStarted], timeout: 1)
         XCTAssertEqual(driver.startUpdatingCallCount, 1)
 
         driver.emit(CLLocation(latitude: 39.90, longitude: 116.40))
@@ -148,6 +152,7 @@ private final class FakeRealtimeLocationDriver: RealtimeLocationDriving {
     var authorizationStatus: CLAuthorizationStatus = .authorizedWhenInUse
     weak var delegate: CLLocationManagerDelegate?
     var onRequestLocation: (() -> Void)?
+    var onStartUpdating: (() -> Void)?
     private(set) var requestAuthorizationCallCount = 0
     private(set) var requestLocationCallCount = 0
     private(set) var startUpdatingCallCount = 0
@@ -164,6 +169,7 @@ private final class FakeRealtimeLocationDriver: RealtimeLocationDriving {
 
     func startUpdatingLocation() {
         startUpdatingCallCount += 1
+        onStartUpdating?()
     }
 
     func stopUpdatingLocation() {

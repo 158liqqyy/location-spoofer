@@ -20,9 +20,9 @@ struct ContentView: View {
                     Image(systemName: "location.fill")
                         .font(.system(size: 48)).foregroundStyle(.blue)
                     ProgressView()
-                    Text(runtimeMode.hasSelectedMode && runtimeMode.mode == .localWiFi
-                         ? "正在初始化地图与本地代理…"
-                         : "正在初始化地图…")
+                    (runtimeMode.hasSelectedMode && runtimeMode.mode == .localWiFi
+                         ? Text("正在初始化地图与本地代理…")
+                         : Text("正在初始化地图…"))
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
             case .setup:
@@ -177,7 +177,7 @@ struct ContentView: View {
         switch prompt.requirement {
         case .required:
             let details = prompt.releaseNotes
-                ?? "更新说明暂时无法加载，请前往最新 Release 页面查看。"
+                ?? String(localized: "更新说明暂时无法加载，请前往最新 Release 页面查看。")
             return Alert(
                 title: Text("需要更新"),
                 message: Text(
@@ -189,7 +189,7 @@ struct ContentView: View {
             )
         case .recommended:
             let details = prompt.releaseNotes
-                ?? "更新说明暂时无法加载，请前往最新 Release 页面查看。"
+                ?? String(localized: "更新说明暂时无法加载，请前往最新 Release 页面查看。")
             return Alert(
                 title: Text("发现新版本"),
                 message: Text(

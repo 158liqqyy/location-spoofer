@@ -219,10 +219,9 @@ App 只验证配置接口的 HTTP 状态、JSON 格式和坐标回读，不管�
 
 社区配置按客户端分区审核；采纳后会在上表链接教程和投稿者，投稿者也可以选择匿名收录。
 
-相关模块快照和来源记录：
+模块与脚本现由本仓库托管，原 `Yu9191/wloc` 仓库已删除，仅保留来源致谢，不再作为运行时依赖：
 
 - [第三方模块说明](docs/THIRD_PARTY_MODULES.md)
-- [Yu9191/wloc](https://github.com/Yu9191/wloc)
 
 第三方客户端、证书、MITM 和代理开关由客户端自身负责。导入任何第三方模块前，请先审查其配置和脚本内容。
 
@@ -351,7 +350,7 @@ dist/PaopaoLocationSpoofer-unsigned.ipa
 - 运行日志保存在设备 App Group 容器中，并自动保留近三天；
 - 问题报告需要用户主动复制后提交到 GitHub；
 - APP 模式会访问本机代理和环境验证地址；
-- 第三方代理模式可能访问上游模块地址和 WLOC 配置接口；
+- 第三方代理模式可能访问本仓库托管的模块地址和 WLOC 配置接口；
 - App 生成的 CA 私钥保存在设备 Keychain 中；
 - 第三方客户端模块、MITM 和证书链路由用户选择的客户端负责。
 
@@ -430,7 +429,7 @@ GitHub Issue Form 中的“App 生成的诊断报告”字段与 App 复制内�
 
 ## 致谢与友链
 
-核心定位响应处理思路、Go 实现和第三方模块参考自：
+核心定位响应处理思路、Go 实现和第三方模块参考自（`Yu9191/wloc` 原仓库已删除）：
 
 - [Yu9191/wloc](https://github.com/Yu9191/wloc)
 - [ios-location-spoofer](https://github.com/mekos2772/ios-location-spoofer)
