@@ -170,7 +170,10 @@ final class ThirdPartyProxyManager: ObservableObject {
                 URLQueryItem(name: "lon", value: String(format: "%.8f", locale: Locale(identifier: "en_US_POSIX"), longitude)),
                 URLQueryItem(name: "lat", value: String(format: "%.8f", locale: Locale(identifier: "en_US_POSIX"), latitude)),
                 URLQueryItem(name: "acc", value: String(accuracy)),
-                URLQueryItem(name: "randomRadius", value: String(randomRadius))
+                URLQueryItem(
+                    name: "randomRadius",
+                    value: String(format: "%g", locale: Locale(identifier: "en_US_POSIX"), randomRadius)
+                )
             ]
         }
         guard let url = components.url else { throw ThirdPartyProxyError.invalidResponse }
@@ -203,6 +206,9 @@ final class ThirdPartyProxyManager: ObservableObject {
 }
 
 enum ThirdPartyProxyClient: String, CaseIterable, Identifiable {
+    /// Bump when a hosted module or script changes to invalidate proxy-client caches.
+    static let moduleSubscriptionVersion = "1.0.7"
+
     case shadowrocket
     case surge
     case quantumultX
@@ -239,21 +245,14 @@ enum ThirdPartyProxyClient: String, CaseIterable, Identifiable {
 
     @MainActor
     var subscriptionURL: URL {
-        // Third-party modules are served directly from the upstream Yu9191/wloc
-        // repository (mirror via gh-proxy when enabled). We no longer maintain
-        // project-owned module copies, so the URL tracks upstream releases.
-        let fileName: String
-        switch self {
-        case .surge, .egern: fileName = "wloc.sgmodule"
-        case .quantumultX: fileName = "wloc.conf"
-        case .loon: fileName = "wloc.lpx"
-        case .stash: fileName = "wloc.stoverride"
-        case .shadowrocket: fileName = "wloc.module"
-        }
-        let base = ThirdPartyModuleSourceStore.shared.useMirror
-            ? "https://gh-proxy.org/https://raw.githubusercontent.com/Yu9191/wloc/refs/heads/main/modules/\(fileName)"
-            : "https://raw.githubusercontent.com/Yu9191/wloc/refs/heads/main/modules/\(fileName)"
-        return URL(string: base)!
+        let directory = ThirdPartyModuleSourceStore.shared.useMirror
+            ? "Resources/ThirdPartyProxyModules"
+            : "ThirdParty/WlocScripts/modules/direct"
+        let prefix = ThirdPartyModuleSourceStore.shared.useMirror
+            ? "https://gh-proxy.org/https://raw.githubusercontent.com/xweiba/location-spoofer/main/"
+            : "https://raw.githubusercontent.com/xweiba/location-spoofer/main/"
+        let base = "\(prefix)\(directory)/\(moduleFileName)"
+        return URL(string: "\(base)?v=\(Self.moduleSubscriptionVersion)")!
     }
 
     var launchURL: URL? {

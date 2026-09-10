@@ -222,11 +222,11 @@ struct SettingsView: View {
 
             Section("致谢") {
                 Button {
-                    if let url = URL(string: "https://github.com/Yu9191/wloc") {
+                    if let url = URL(string: "https://github.com/xweiba/location-spoofer/blob/main/docs/THIRD_PARTY_MODULES.md") {
                         UIApplication.shared.open(url)
                     }
                 } label: {
-                    Label("核心定位改写逻辑移植自 Yu9191/wloc", systemImage: "heart.fill")
+                    Label("定位改写脚本源自 Yu9191/wloc，现由本项目维护", systemImage: "heart.fill")
                         .foregroundStyle(.pink)
                 }
             }

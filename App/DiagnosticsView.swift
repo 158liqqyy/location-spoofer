@@ -23,7 +23,10 @@ struct RuntimeLogsView: View {
     private var filteredEntries: [RuntimeLogEntry] {
         let q = logFilter.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !q.isEmpty else { return entries }
-        return entries.filter { $0.message.localizedCaseInsensitiveContains(q) }
+        return entries.filter {
+            $0.localizedMessage.localizedCaseInsensitiveContains(q)
+                || $0.localizedCategory.localizedCaseInsensitiveContains(q)
+        }
     }
 
     var body: some View {
@@ -201,7 +204,7 @@ struct RuntimeLogsView: View {
                 .foregroundStyle(entry.level == .error ? .red : entry.level == .warning ? .orange : .blue).frame(width: 18)
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text("\(entry.source) \(entry.category)").font(.caption.weight(.semibold))
+                    Text("\(entry.source) \(entry.localizedCategory)").font(.caption.weight(.semibold))
                     Spacer()
                     Button {
                         UIPasteboard.general.string = entry.renderedText
@@ -225,9 +228,9 @@ struct RuntimeLogsView: View {
                     }
                     .buttonStyle(.plain)
                 }
-                Text(entry.message).font(.caption.monospaced()).textSelection(.enabled)
+                Text(entry.localizedMessage).font(.caption.monospaced()).textSelection(.enabled)
                 if !entry.details.isEmpty {
-                    Text(entry.details.sorted(by: { $0.key < $1.key }).map { "\($0.key): \($0.value)" }.joined(separator: "\n"))
+                    Text(entry.localizedDetailsText)
                         .font(.caption2.monospaced()).foregroundStyle(.secondary).textSelection(.enabled)
                 }
             }
@@ -246,22 +249,26 @@ struct RuntimeLogsView: View {
             let active = response.success && response.latitude != nil && response.longitude != nil
             testSucceeded = true
             testResult = active ? String(localized: "第三方模块连接通过，已有坐标") : String(localized: "第三方模块连接通过，暂无坐标")
-            testMessage = """
-            ======== 第三方代理连接检测 ========
-            模式: 测试模式
-            请求: wloc-settings/save?action=query
-            拦截响应: 有效 JSON
-            已保存坐标: \(active ? "是" : "否")
-            """
+            testMessage = thirdPartyTestLog(active: active)
         } catch {
             testSucceeded = false
             testResult = String(localized: "第三方模块连接失败")
-            testMessage = """
-            ======== 第三方代理连接检测 ========
-            模式: 测试模式
-            请求: wloc-settings/save?action=query
-            结果: \(error.localizedDescription)
-            """
+            testMessage = thirdPartyTestLog(error: error)
         }
+    }
+
+    private func thirdPartyTestLog(active: Bool? = nil, error: Error? = nil) -> String {
+        var lines = [
+            String(localized: "======== 第三方代理连接检测 ========"),
+            String(localized: "模式: 测试模式"),
+            String(localized: "请求: wloc-settings/save?action=query")
+        ]
+        if let active {
+            lines.append(String(localized: "拦截响应: 有效 JSON"))
+            lines.append(String(localized: "已保存坐标: \(active ? String(localized: "是") : String(localized: "否"))"))
+        } else if let error {
+            lines.append(String(localized: "结果: \(error.localizedDescription)"))
+        }
+        return lines.joined(separator: "\n")
     }
 }

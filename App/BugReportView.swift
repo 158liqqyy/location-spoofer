@@ -95,9 +95,10 @@ struct BugReportView: View {
                 do {
                     let response = try await thirdPartyProxy.query()
                     let active = response.success && response.latitude != nil && response.longitude != nil
-                    testLog = "第三方代理测试模式：模块连接成功；已保存坐标=\(active ? "是" : "否")"
+                    let savedCoordinate = active ? String(localized: "是") : String(localized: "否")
+                    testLog = String(localized: "第三方代理测试模式：模块连接成功；已保存坐标=\(savedCoordinate)")
                 } catch {
-                    testLog = "第三方代理测试模式：模块连接失败；\(error.localizedDescription)"
+                    testLog = String(localized: "第三方代理测试模式：模块连接失败；\(error.localizedDescription)")
                 }
             } else {
                 _ = await setup.runVerificationTest()
@@ -113,22 +114,11 @@ struct BugReportView: View {
             let systemVersion = UIDevice.current.systemVersion
 
             // 拼接报告
-            let report = """
-            ### 环境信息
-            App 版本: \(appVersion)
-            系统版本: iOS \(systemVersion)
-            运行模式: \(runtimeMode.mode.displayName)
-            第三方客户端: \(runtimeMode.mode == .thirdParty ? thirdPartyClient.selectedClient.name : "不适用")
-            可复现环境: \(isReproducible ? "是" : "否")
-
-            ### 问题描述
-            \(description.trimmingCharacters(in: .whitespacesAndNewlines))
-
-            ### 诊断日志
-            ```
-            \(testLog.isEmpty ? "（无诊断数据）" : testLog)
-            ```
-            """
+            let report = bugReport(
+                appVersion: appVersion,
+                systemVersion: systemVersion,
+                testLog: testLog
+            )
 
             // 复制到剪切板
             UIPasteboard.general.string = report
@@ -137,5 +127,29 @@ struct BugReportView: View {
             // 弹窗
             showCopiedAlert = true
         }
+    }
+
+    private func bugReport(appVersion: String, systemVersion: String, testLog: String) -> String {
+        let client = runtimeMode.mode == .thirdParty
+            ? thirdPartyClient.selectedClient.name
+            : String(localized: "不适用")
+        let reproducible = isReproducible ? String(localized: "是") : String(localized: "否")
+        let diagnostics = testLog.isEmpty ? String(localized: "（无诊断数据）") : testLog
+        return """
+        ### \(String(localized: "环境信息"))
+        \(String(localized: "App 版本")): \(appVersion)
+        \(String(localized: "系统版本")): iOS \(systemVersion)
+        \(String(localized: "运行模式")): \(runtimeMode.mode.displayName)
+        \(String(localized: "第三方客户端")): \(client)
+        \(String(localized: "可复现环境")): \(reproducible)
+
+        ### \(String(localized: "问题描述"))
+        \(description.trimmingCharacters(in: .whitespacesAndNewlines))
+
+        ### \(String(localized: "诊断日志"))
+        ```
+        \(diagnostics)
+        ```
+        """
     }
 }

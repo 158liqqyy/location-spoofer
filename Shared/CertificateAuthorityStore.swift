@@ -13,8 +13,8 @@ enum CertificateAuthorityStoreError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidAuthority: return "本地 CA 证书或私钥无效"
-        case let .keychain(status): return "无法写入设备钥匙串（\(status)）"
+        case .invalidAuthority: return String(localized: "本地 CA 证书或私钥无效")
+        case let .keychain(status): return String(localized: "无法写入设备钥匙串（\(status)）")
         }
     }
 }

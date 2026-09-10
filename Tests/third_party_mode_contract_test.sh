@@ -10,8 +10,8 @@ CONTENT="$ROOT/App/ContentView.swift"
 SETUP="$ROOT/App/FirstSetupView.swift"
 SETTINGS="$ROOT/App/SettingsView.swift"
 
-grep -q 'return "APP模式"' "$MODE" || fail "APP mode display name is missing"
-grep -q 'return "第三方代理模式"' "$MODE" || fail "third-party mode display name is missing"
+grep -q 'String(localized: "APP模式")' "$MODE" || fail "localized APP mode display name is missing"
+grep -q 'String(localized: "第三方代理模式")' "$MODE" || fail "localized third-party mode display name is missing"
 grep -q 'hasSelectedMode' "$MODE" || fail "first-launch mode selection must be persisted"
 grep -q 'guard runtimeMode.hasSelectedMode else' "$CONTENT" || fail "mode selection must gate startup"
 grep -q 'phase = .setup' "$CONTENT" || fail "first launch must enter setup before map construction"
@@ -37,8 +37,23 @@ grep -Fq '保存：GET ?lon=<经度>&lat=<纬度>&acc=<精度>' "$SETUP" \
 grep -Fq '清除：GET ?action=clear' "$SETUP" \
   || fail "client integration guidance must document the clear action"
 
-grep -q 'Yu9191/wloc/refs/heads/main/modules' "$MANAGER" \
-  || fail "third-party subscription must point at upstream Yu9191 modules"
+grep -q 'raw.githubusercontent.com/xweiba/location-spoofer/main' "$MANAGER" \
+  || fail "third-party subscription must point at project-owned modules"
+! grep -q 'raw.githubusercontent.com/Yu9191/wloc' "$MANAGER" \
+  || fail "third-party subscription must not depend on the removed upstream repository"
+MODULES="$ROOT/Resources/ThirdPartyProxyModules"
+SCRIPTS="$ROOT/ThirdParty/WlocScripts"
+for file in wloc.module wloc.sgmodule wloc.conf wloc.lpx wloc.stoverride; do
+  test -s "$MODULES/$file" || fail "missing project-owned mirrored module: $file"
+  test -s "$SCRIPTS/modules/direct/$file" || fail "missing project-owned direct module: $file"
+  ! grep 'ThirdParty/WlocScripts/dist/v1/wloc' "$MODULES/$file" "$SCRIPTS/modules/direct/$file" \
+      | grep -Fvq '?v=1.0.7' \
+    || fail "hosted script URLs must carry the current cache version: $file"
+done
+test -s "$SCRIPTS/dist/v1/wloc.js" || fail "missing hosted WLOC response script"
+test -s "$SCRIPTS/dist/v1/wloc-settings.js" || fail "missing hosted WLOC settings script"
+! grep -R -q 'raw.githubusercontent.com/Yu9191/wloc' "$MODULES" "$SCRIPTS/modules/direct" \
+  || fail "hosted modules must not reference the removed upstream repository"
 grep -q 'wloc.sgmodule' "$MANAGER" || fail "Surge/Egern module mapping is missing"
 grep -q 'wloc.stoverride' "$MANAGER" || fail "Stash must use .stoverride directly"
 grep -q 'shadowrocket://' "$MANAGER" || fail "Shadowrocket launch URL is missing"
@@ -88,7 +103,7 @@ grep -q 'setup.requestThirdPartySetup(message: error.localizedDescription)' "$RO
   || fail "third-party coordinate sync failures must open the import guide"
 grep -q '检测到第三方代理连接异常，请检查模块、MITM 和代理连接后重新检测' "$SETUP" \
   || fail "runtime repair must explain why the import guide opened"
-test "$(grep -c 'title: \"接口连接失败\"' "$SETUP")" -eq 1 \
+test "$(grep -c 'title: String(localized: \"接口连接失败\")' "$SETUP")" -eq 1 \
   || fail "third-party failure details must render in one shared result area"
 grep -Fq '当前客户端：\(client.name)' "$SETUP" \
   || fail "third-party failure logs must identify the selected client"

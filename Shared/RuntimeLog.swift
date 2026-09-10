@@ -38,10 +38,35 @@ struct RuntimeLogEntry: Codable, Identifiable, Equatable {
     var renderedText: String {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let suffix = details.isEmpty
+        let localizedDetails = details.map {
+            (localizedDiagnosticText($0.key), localizedDiagnosticValue($0.value))
+        }
+        let suffix = localizedDetails.isEmpty
             ? ""
-            : "  " + details.sorted(by: { $0.key < $1.key }).map { "\($0.key)=\($0.value)" }.joined(separator: "  ")
-        return "\(formatter.string(from: timestamp)) [\(source)] [\(level.rawValue.uppercased())] [\(category)] \(message)\(suffix)"
+            : "  " + localizedDetails.sorted(by: { $0.0 < $1.0 }).map { "\($0.0)=\($0.1)" }.joined(separator: "  ")
+        return "\(formatter.string(from: timestamp)) [\(source)] [\(level.rawValue.uppercased())] [\(localizedCategory)] \(localizedMessage)\(suffix)"
+    }
+
+    var localizedCategory: String { localizedDiagnosticText(category) }
+    var localizedMessage: String { localizedDiagnosticText(message) }
+
+    var localizedDetailsText: String {
+        details.map { (localizedDiagnosticText($0.key), localizedDiagnosticValue($0.value)) }
+            .sorted(by: { $0.0 < $1.0 })
+            .map { "\($0.0): \($0.1)" }
+            .joined(separator: "\n")
+    }
+
+    private func localizedDiagnosticText(_ text: String) -> String {
+        String(localized: String.LocalizationValue(text))
+    }
+
+    private func localizedDiagnosticValue(_ value: String) -> String {
+        switch value {
+        case "true": return String(localized: "是")
+        case "false": return String(localized: "否")
+        default: return localizedDiagnosticText(value)
+        }
     }
 }
 

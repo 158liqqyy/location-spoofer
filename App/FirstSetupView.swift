@@ -220,15 +220,15 @@ struct FirstSetupView: View {
             return thirdPartyTestFailure.message
         }
         guard !setup.message.isEmpty else { return nil }
-        return """
-        ======== 第三方代理运行检测 ========
-        当前客户端：\(thirdPartyClient.selectedClient.name)
-        触发来源：地图或设置中的第三方代理操作
-        请求动作：WLOC 配置接口
-        检测结果：失败
-        错误详情：\(setup.message)
-        处理建议：确认模块已启用，并检查 MITM、证书和代理/VPN 连接。
-        """
+        return [
+            String(localized: "======== 第三方代理运行检测 ========"),
+            String(localized: "当前客户端：\(thirdPartyClient.selectedClient.name)"),
+            String(localized: "触发来源：地图或设置中的第三方代理操作"),
+            String(localized: "请求动作：WLOC 配置接口"),
+            String(localized: "检测结果：失败"),
+            String(localized: "错误详情：\(setup.message)"),
+            String(localized: "处理建议：确认模块已启用，并检查 MITM、证书和代理/VPN 连接。")
+        ].joined(separator: "\n")
     }
 
     private var modeStep: some View {
@@ -468,10 +468,10 @@ struct FirstSetupView: View {
 
                     Text("返回格式")
                         .font(.subheadline.bold())
-                    Text("""
+                    Text(String(localized: """
                     成功：{"success":true,"longitude":113.0,"latitude":22.0,"accuracy":25}
                     失败：{"success":false,"error":"错误说明"}
-                    """)
+                    """))
                         .font(.caption.monospaced())
                         .textSelection(.enabled)
 
@@ -641,7 +641,7 @@ struct FirstSetupView: View {
     private func setupScreenshot(
         assetName: String,
         title: String,
-        caption: LocalizedStringKey
+        caption: String
     ) -> some View {
         if let image = UIImage(named: assetName) {
             Button {
@@ -657,7 +657,7 @@ struct FirstSetupView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.up.left.and.arrow.down.right")
-                        Text(caption)
+                        Text(LocalizedStringKey(caption))
                     }
                     .font(.caption2)
                     .foregroundStyle(.secondary)
@@ -672,7 +672,11 @@ struct FirstSetupView: View {
                 )
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(LocalizedStringKey(title))
+            .accessibilityLabel(
+                Text(LocalizedStringKey(title))
+                    + Text(": ")
+                    + Text(LocalizedStringKey(caption))
+            )
             .accessibilityHint("轻点查看大图")
         }
     }
@@ -872,21 +876,19 @@ struct FirstSetupView: View {
                         "处理建议": ThirdPartyProxyError.recoverySuggestion(for: error)
                     ]
                 )
-                thirdPartyTestFailure = ThirdPartyConnectionTestFailure(
-                    message: """
-                    ======== 第三方代理连接检测 ========
-                    当前客户端：\(client.name)
-                    配置接口：/wloc-settings/save
-                    请求动作：WLOC query
-                    检查范围：模块拦截、MITM、证书、代理/VPN 连接
-                    连接状态：\(connectionState)
-                    检测结果：失败
-                    耗时：\(elapsedMilliseconds) ms
-                    错误类型：\(errorType)
-                    错误详情：\(error.localizedDescription)
-                    处理建议：\(ThirdPartyProxyError.recoverySuggestion(for: error))。
-                    """
-                )
+                thirdPartyTestFailure = ThirdPartyConnectionTestFailure(message: [
+                    String(localized: "======== 第三方代理连接检测 ========"),
+                    String(localized: "当前客户端：\(client.name)"),
+                    String(localized: "配置接口：/wloc-settings/save"),
+                    String(localized: "请求动作：WLOC query"),
+                    String(localized: "检查范围：模块拦截、MITM、证书、代理/VPN 连接"),
+                    String(localized: "连接状态：\(connectionState)"),
+                    String(localized: "检测结果：失败"),
+                    String(localized: "耗时：\(elapsedMilliseconds) ms"),
+                    String(localized: "错误类型：\(errorType)"),
+                    String(localized: "错误详情：\(error.localizedDescription)"),
+                    String(localized: "处理建议：\(ThirdPartyProxyError.recoverySuggestion(for: error))。")
+                ].joined(separator: "\n"))
                 showsThirdPartyFailureLog = true
             }
         }
@@ -895,11 +897,11 @@ struct FirstSetupView: View {
     private var thirdPartyConnectionStateDescription: String {
         switch thirdPartyProxy.connectionState {
         case .unknown:
-            return "未检测"
+            return String(localized: "未检测")
         case .connected(let active):
-            return active ? "已连接，有保存坐标" : "已连接，无保存坐标"
+            return active ? String(localized: "已连接，有保存坐标") : String(localized: "已连接，无保存坐标")
         case .failed(let message):
-            return "连接失败（\(message)）"
+            return String(localized: "连接失败（\(message)）")
         }
     }
 

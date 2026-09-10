@@ -182,5 +182,5 @@ struct ProxyCoordinateSnapshot: Equatable {
 
 enum ProxyError: LocalizedError {
     case startFailed
-    var errorDescription: String? { "Go proxy 启动失败" }
+    var errorDescription: String? { String(localized: "Go proxy 启动失败") }
 }

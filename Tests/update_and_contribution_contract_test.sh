@@ -25,7 +25,7 @@ import sys
 with open(sys.argv[1], encoding="utf-8") as handle:
     config = json.load(handle)
 
-assert config["latestVersion"] == "1.0.5"
+assert config["latestVersion"] == "1.0.6"
 assert config["minimumSupportedVersion"] == "1.0.0"
 assert "shadowrocket" not in config["communityPromptClients"]
 assert set(config["communityPromptClients"]) == {
@@ -121,7 +121,7 @@ grep -Fq 'SafariView(url: destination.url)' "$BUG_REPORT" \
   || fail "the App bug report must not be handed to an external GitHub client"
 grep -Fq 'App 生成的诊断报告' "$BUG_REPORT" \
   || fail "the App must tell users where to paste the generated report"
-grep -Fq '第三方客户端:' "$BUG_REPORT" \
+grep -Fq 'String(localized: "第三方客户端")' "$BUG_REPORT" \
   || fail "the generated report must identify the selected third-party client"
 grep -Fq 'Label("报告 Bug"' "$SETTINGS" \
   || fail "Settings must identify the support action as a bug report"

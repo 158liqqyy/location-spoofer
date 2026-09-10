@@ -766,7 +766,8 @@ struct MapHomeView: View {
     private func presentSuccessfulOperationTip(_ kind: VirtualLocationTipKind) {
         let count = tipPreferences.recordSuccessfulOperation(kind)
         let operationName = kind == .activation ? "开启" : "关闭"
-        RuntimeLogger.info("APP", "提醒", "累计\(operationName)虚拟定位次数", details: [
+        RuntimeLogger.info("APP", "提醒", "累计虚拟定位操作次数", details: [
+            "操作": operationName,
             "次数": String(count),
             "运行模式": runtimeMode.mode.displayName,
             "可显示不再提醒": String(tipPreferences.canSuppress(kind))
@@ -1335,7 +1336,9 @@ struct MapHomeView: View {
                       context.showFailureAlert,
                       !Task.isCancelled,
                       mapState.selection.revision == context.intent.selectionRevision else { return }
-                RuntimeLogger.info("APP", "地图", "定位失败 status=\(realtime.authorizationStatus.rawValue)")
+                RuntimeLogger.info("APP", "地图", "定位失败", details: [
+                    "授权状态rawValue": String(realtime.authorizationStatus.rawValue)
+                ])
                 showLocationAlert = true
                 return
             }
