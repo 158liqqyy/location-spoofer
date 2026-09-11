@@ -47,7 +47,7 @@ for file in wloc.module wloc.sgmodule wloc.conf wloc.lpx wloc.stoverride; do
   test -s "$MODULES/$file" || fail "missing project-owned mirrored module: $file"
   test -s "$SCRIPTS/modules/direct/$file" || fail "missing project-owned direct module: $file"
   ! grep 'ThirdParty/WlocScripts/dist/v1/wloc' "$MODULES/$file" "$SCRIPTS/modules/direct/$file" \
-      | grep -Fvq '?v=1.0.7' \
+      | grep -Fvq '?v=1.0.8' \
     || fail "hosted script URLs must carry the current cache version: $file"
 done
 test -s "$SCRIPTS/dist/v1/wloc.js" || fail "missing hosted WLOC response script"
@@ -60,13 +60,16 @@ grep -q 'shadowrocket://' "$MANAGER" || fail "Shadowrocket launch URL is missing
 for scheme in surge quantumult-x loon stash egern; do
   grep -q "${scheme}://" "$MANAGER" || fail "$scheme launch URL is missing"
 done
-grep -q '复制解密域名' "$SETUP" || fail "all clients must expose the MITM hostname copy action"
+grep -Fq 'Text("复制 \(hostname)")' "$SETUP" \
+  || fail "all clients must expose a copy action for each MITM hostname"
 grep -q '配置时请复制下方全部解密域名' "$SETUP" \
   || fail "setup guidance must direct users to copy all Apple location hostnames"
-grep -q 'ThirdPartyProxyManager.interceptionHostnamesText' "$SETUP" \
-  || fail "setup hostname copy actions must use the shared interception hostname value"
-grep -q 'ThirdPartyProxyManager.interceptionHostnamesText' "$SETTINGS" \
-  || fail "Settings must expose the shared interception hostname copy action"
+grep -q 'ForEach(ThirdPartyProxyManager.interceptionHostnames' "$SETUP" \
+  || fail "setup must render every interception hostname"
+grep -q 'ForEach(ThirdPartyProxyManager.interceptionHostnames' "$SETTINGS" \
+  || fail "Settings must render every interception hostname"
+test "$(grep -h 'UIPasteboard.general.string = hostname' "$SETUP" "$SETTINGS" | wc -l | tr -d ' ')" -eq 2 \
+  || fail "both hostname lists must copy one selected hostname"
 grep -q '配置 → 模块' "$SETUP" || fail "Shadowrocket module import guidance is missing"
 grep -q 'HTTPS 解密' "$SETUP" || fail "Shadowrocket HTTPS decryption guidance is missing"
 ! grep -q '当前可测试' "$SETUP" || fail "Shadowrocket must not show the obsolete current-test label"

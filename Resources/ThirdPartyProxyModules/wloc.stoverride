@@ -1,7 +1,8 @@
 name: Apple WLOC 定位修改
-desc: "修改 Apple 网络定位返回坐标 | 快捷指令(推荐): 设置地理位置 https://www.icloud.com/shortcuts/a82717d8fdad4e6280866fcf911173f7 清理恢复位置 https://www.icloud.com/shortcuts/f42632d406504f24a2cd163af4fe012f | 选点页面: https://wloc-pages.pages.dev/"
-author: xweiba
+desc: "Apple 网络定位修改 | 使用说明: https://github.com/xweiba/location-spoofer/blob/main/docs/THIRD_PARTY_MODULES.md"
+author: Yu9191 Rewrite
 homepage: https://github.com/xweiba/location-spoofer
+icon: https://raw.githubusercontent.com/xweiba/location-spoofer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 category: Tools
 
 http:
@@ -20,7 +21,7 @@ http:
       max-size: 0
       timeout: 30
       argument: longitude=113.94114&latitude=22.544577&accuracy=25&randomRadius=0&logLevel=info
-    - match: ^https?:\/\/gs-loc(-cn)?\.apple\.com\/wloc-settings\/(save|version)
+    - match: ^https?:\/\/gs-loc(-cn)?\.apple\.com\/wloc-settings\/save
       name: WLOC.Settings
       type: request
       require-body: false
@@ -28,8 +29,8 @@ http:
 
 script-providers:
   WLOC.Location:
-    url: https://gh-proxy.org/https://raw.githubusercontent.com/xweiba/location-spoofer/main/ThirdParty/WlocScripts/dist/v1/wloc.js?v=1.0.7
+    url: https://gh-proxy.org/https://raw.githubusercontent.com/xweiba/location-spoofer/main/ThirdParty/WlocScripts/dist/v1/wloc.js?v=1.0.8
     interval: 86400
   WLOC.Settings:
-    url: https://gh-proxy.org/https://raw.githubusercontent.com/xweiba/location-spoofer/main/ThirdParty/WlocScripts/dist/v1/wloc-settings.js?v=1.0.7
+    url: https://gh-proxy.org/https://raw.githubusercontent.com/xweiba/location-spoofer/main/ThirdParty/WlocScripts/dist/v1/wloc-settings.js?v=1.0.8
     interval: 86400

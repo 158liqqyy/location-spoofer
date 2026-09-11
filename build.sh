@@ -8,7 +8,7 @@ usage() {
   cat <<'USAGE'
 Usage: ./build.sh [--test]
 
-Builds dist/PaopaoLocationSpoofer-unsigned.ipa without signing it.
+Builds an unsigned IPA with both stable and timestamped filenames in dist/.
 
 Options:
   --test  After the unsigned IPA is created, run iOS Simulator unit tests.

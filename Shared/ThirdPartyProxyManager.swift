@@ -63,7 +63,6 @@ final class ThirdPartyProxyManager: ObservableObject {
         "bluedot.is.autonavi.com",
         "bluedot.is.autonavi.com.gds.alibabadns.com"
     ]
-    static let interceptionHostnamesText = interceptionHostnames.joined(separator: ", ")
     static let configurationEndpoint = URL(string: "https://gs-loc.apple.com/wloc-settings/save")!
 
     @Published private(set) var connectionState: ThirdPartyProxyConnectionState = .unknown
@@ -207,7 +206,7 @@ final class ThirdPartyProxyManager: ObservableObject {
 
 enum ThirdPartyProxyClient: String, CaseIterable, Identifiable {
     /// Bump when a hosted module or script changes to invalidate proxy-client caches.
-    static let moduleSubscriptionVersion = "1.0.7"
+    static let moduleSubscriptionVersion = "1.0.8"
 
     case shadowrocket
     case surge

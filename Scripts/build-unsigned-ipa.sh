@@ -27,6 +27,16 @@ fi
 
 mkdir -p build/UnsignedIPA/Payload dist
 ditto "$APP" "build/UnsignedIPA/Payload/PaopaoLocationSpoofer.app"
+BUILD_TIMESTAMP="${BUILD_TIMESTAMP:-$(date '+%Y%m%d-%H%M%S')}"
+case "$BUILD_TIMESTAMP" in
+  [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]) ;;
+  *) echo "BUILD_TIMESTAMP must use yyyyMMdd-HHmmss format" >&2; exit 2 ;;
+esac
+IPA="$ROOT/dist/PaopaoLocationSpoofer-unsigned.ipa"
+TIMESTAMPED_IPA="$ROOT/dist/PaopaoLocationSpoofer-${BUILD_TIMESTAMP}-unsigned.ipa"
+rm -f "$IPA"
 cd build/UnsignedIPA
-zip -qry "$ROOT/dist/PaopaoLocationSpoofer-unsigned.ipa" Payload
-echo "Output: dist/PaopaoLocationSpoofer-unsigned.ipa"
+zip -qry "$IPA" Payload
+ditto "$IPA" "$TIMESTAMPED_IPA"
+echo "Output: $IPA"
+echo "Timestamped output: $TIMESTAMPED_IPA"

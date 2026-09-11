@@ -33,7 +33,7 @@ struct SettingsView: View {
     @State private var proxyOperationAlertTitle = String(localized: "代理操作失败")
     @State private var modeOperationRunning = false
     @State private var copiedClient: ThirdPartyProxyClient?
-    @State private var copiedMITMHostnames = false
+    @State private var copiedMITMHostname: String?
     @State private var showCertificateResetConfirmation = false
     @State private var githubDestination: SafariDestination?
     @State private var isCheckingForUpdates = false
@@ -425,11 +425,25 @@ struct SettingsView: View {
                 (copiedClient == thirdPartyClient.selectedClient ? Label("已复制模块订阅地址", systemImage: "doc.on.doc") : Label("复制模块订阅地址", systemImage: "doc.on.doc"))
             }
 
-            Button {
-                UIPasteboard.general.string = ThirdPartyProxyManager.interceptionHostnamesText
-                copiedMITMHostnames = true
-            } label: {
-                (copiedMITMHostnames ? Label("已复制解密域名", systemImage: "doc.on.doc") : Label("复制解密域名", systemImage: "doc.on.doc"))
+            ForEach(ThirdPartyProxyManager.interceptionHostnames, id: \.self) { hostname in
+                HStack(spacing: 8) {
+                    Text(hostname)
+                        .font(.caption.monospaced())
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Button {
+                        UIPasteboard.general.string = hostname
+                        copiedMITMHostname = hostname
+                    } label: {
+                        Image(systemName: copiedMITMHostname == hostname ? "checkmark" : "doc.on.doc")
+                            .frame(width: 28, height: 28)
+                    }
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel(
+                        copiedMITMHostname == hostname
+                            ? Text("已复制 \(hostname)")
+                            : Text("复制 \(hostname)")
+                    )
+                }
             }
 
             Button {

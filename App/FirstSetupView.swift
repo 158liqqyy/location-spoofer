@@ -53,7 +53,7 @@ struct FirstSetupView: View {
     @ObservedObject private var thirdPartyProxy = ThirdPartyProxyManager.shared
     @ObservedObject private var thirdPartyClient = ThirdPartyProxyClientStore.shared
     @State private var copiedSubscriptionURL = false
-    @State private var copiedMITMHostname = false
+    @State private var copiedMITMHostname: String?
     @State private var screenshotPreview: SetupScreenshotPreview?
     @State private var certificateDownloadDestination: CertificateDownloadDestination?
     @State private var thirdPartyTestFailure: ThirdPartyConnectionTestFailure?
@@ -557,7 +557,7 @@ struct FirstSetupView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        mitmHostnameCopyButton
+                        mitmHostnameList(for: client)
                     }
                 }
             }
@@ -585,7 +585,7 @@ struct FirstSetupView: View {
                     caption: "1 开启 HTTPS 解密，2 添加复制的全部解密域名，3 打开证书设置。"
                 )
 
-                mitmHostnameCopyButton
+                mitmHostnameList(for: .shadowrocket)
 
                 instructionRow(4, "按 Shadowrocket 提示生成并完成证书授权。")
                 setupScreenshot(
@@ -595,14 +595,6 @@ struct FirstSetupView: View {
                 )
                 instructionRow(5, "返回 HTTPS 解密页面，点击右上角勾号保存，然后开启代理。")
 
-                Button {
-                    openThirdPartyClient(.shadowrocket)
-                } label: {
-                    Label("打开 Shadowrocket 继续配置", systemImage: "arrow.up.forward.app")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-
                 Text("App 只能唤起 Shadowrocket，无法通过公开接口直接跳转到“模块”或“HTTPS 解密”页面。")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
@@ -610,17 +602,37 @@ struct FirstSetupView: View {
         }
     }
 
-    private var mitmHostnameCopyButton: some View {
-        Button {
-            UIPasteboard.general.string = ThirdPartyProxyManager.interceptionHostnamesText
-            copiedMITMHostname = true
-        } label: {
-            (copiedMITMHostname
-                ? Label("已复制解密域名", systemImage: "doc.on.doc")
-                : Label("复制解密域名", systemImage: "doc.on.doc"))
-            .frame(maxWidth: .infinity)
+    private func mitmHostnameList(for client: ThirdPartyProxyClient) -> some View {
+        VStack(spacing: 8) {
+            ForEach(ThirdPartyProxyManager.interceptionHostnames, id: \.self) { hostname in
+                HStack(spacing: 8) {
+                    Text(hostname)
+                        .font(.caption.monospaced())
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Button {
+                        UIPasteboard.general.string = hostname
+                        copiedMITMHostname = hostname
+                    } label: {
+                        Image(systemName: copiedMITMHostname == hostname ? "checkmark" : "doc.on.doc")
+                            .frame(width: 28, height: 28)
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityLabel(
+                        copiedMITMHostname == hostname
+                            ? Text("已复制 \(hostname)")
+                            : Text("复制 \(hostname)")
+                    )
+                }
+            }
+
+            Button {
+                openThirdPartyClient(client)
+            } label: {
+                Label("打开 \(client.name)", systemImage: "arrow.up.forward.app")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
         }
-        .buttonStyle(.borderedProminent)
     }
 
     private func instructionRow(_ number: Int, _ text: LocalizedStringKey) -> some View {

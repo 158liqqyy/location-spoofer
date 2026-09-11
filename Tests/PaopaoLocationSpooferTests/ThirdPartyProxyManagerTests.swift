@@ -127,8 +127,14 @@ final class ThirdPartyProxyManagerTests: XCTestCase {
 
     func testClientLinksUseProjectOwnedModulesAndVerificationLabels() {
         XCTAssertEqual(
-            ThirdPartyProxyManager.interceptionHostnamesText,
-            "gs-loc.apple.com, gs-loc-cn.apple.com, gsp-ssl.ls.apple.com, bluedot.is.autonavi.com, bluedot.is.autonavi.com.gds.alibabadns.com"
+            ThirdPartyProxyManager.interceptionHostnames,
+            [
+                "gs-loc.apple.com",
+                "gs-loc-cn.apple.com",
+                "gsp-ssl.ls.apple.com",
+                "bluedot.is.autonavi.com",
+                "bluedot.is.autonavi.com.gds.alibabadns.com"
+            ]
         )
         XCTAssertNil(ThirdPartyProxyClient.shadowrocket.verificationText)
         XCTAssertEqual(
