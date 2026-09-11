@@ -33,6 +33,15 @@ assert set(config["communityPromptClients"]) == {
 }
 PY
 
+LATEST_VERSION="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["latestVersion"])' "$ROOT/version.txt")"
+
+grep -Fq "latestVersion: \"$LATEST_VERSION\"" "$CONFIG" \
+  || fail "Shared/AppRemoteConfiguration.swift fallback latestVersion must match version.txt ($LATEST_VERSION)"
+grep -Fq "version-v$LATEST_VERSION" "$ROOT/README.md" \
+  || fail "README.md version badge must match version.txt ($LATEST_VERSION)"
+grep -Fq "version-v$LATEST_VERSION" "$ROOT/README.en.md" \
+  || fail "README.en.md version badge must match version.txt ($LATEST_VERSION)"
+
 grep -q 'static let fallback = AppRemoteConfiguration' "$CONFIG" \
   || fail "the app must ship a built-in remote-configuration fallback"
 grep -q 'timeoutIntervalForRequest = 1.5' "$CONFIG" \
