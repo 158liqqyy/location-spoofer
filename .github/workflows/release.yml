@@ -28,6 +28,9 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
+      - name: Run contract tests
+        run: ./Tests/run_all_contract_tests.sh
+
       - name: Build unsigned IPA
         run: ./build.sh
 
