@@ -158,6 +158,8 @@ struct SettingsView: View {
                 valueRow("版本", value: versionText)
             }
 
+            DingTalkAutomationGuideSection()
+
             if runtimeMode.mode == .localWiFi {
                 Section("证书") {
                     Button(role: .destructive) {
